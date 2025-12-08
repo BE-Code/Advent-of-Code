@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'json'
 
 class Clock
   def initialize
@@ -25,14 +26,17 @@ class Clock
   end
 end
 
-def run_part(day, part_num, test_mode, verbose, run_path)
-  input_file = test_mode ? "Day #{day}/ex_input#{part_num}.txt" : "Day #{day}/input#{part_num}.txt"
-  input_path = File.join(run_path, input_file)
+def run_part(day, part_num, test_mode, verbose, run_path, config)
+  input_key = test_mode ? "part#{part_num}Test" : "part#{part_num}"
+  input_filename = config.dig('input', input_key)
+  return unless input_filename
 
+  input_path = File.join(run_path, "Day #{day}", input_filename)
   return unless File.exist?(input_path)
 
+  separator = config['separator'] || "\n"
   input = File.read(input_path)
-  lines = input.split("\n")
+  lines = input.split(separator)
 
   clock = Clock.new
   answer = send("solvePart#{part_num}", lines, verbose)
@@ -59,10 +63,12 @@ if __FILE__ == $0
   require_relative "Day #{day}/main.rb"
 
   run_path = File.dirname(__FILE__)
+  config_path = File.join(run_path, "Day #{day}", "config.json")
+  config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
 
   puts "Day #{day}#{test_mode ? ' (test mode)' : ''}"
   puts "---------------------"
 
-  run_part(day, 1, test_mode, $verbose, run_path)
-  run_part(day, 2, test_mode, $verbose, run_path)
+  run_part(day, 1, test_mode, $verbose, run_path, config)
+  run_part(day, 2, test_mode, $verbose, run_path, config)
 end
