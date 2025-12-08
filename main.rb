@@ -26,35 +26,95 @@ class Clock
   end
 end
 
-def run_part(day, part_num, test_mode, verbose, run_path, config)
+def load_input(day, part_num, test_mode, run_path, config)
   input_key = test_mode ? "part#{part_num}Test" : "part#{part_num}"
   input_filename = config.dig('input', input_key)
-  return unless input_filename
+  return nil unless input_filename
 
   input_path = File.join(run_path, "Day #{day}", input_filename)
-  return unless File.exist?(input_path)
+  return nil unless File.exist?(input_path)
 
   separator = config['separator'] || "\n"
   input = File.read(input_path)
-  lines = input.split(separator)
+  return input.split(separator)
+end
+
+def run_part(day, part_num, test_mode, verbose, run_path, config, output: true)
+  input = load_input(day, part_num, test_mode, run_path, config)
+  return nil unless input
 
   clock = Clock.new
-  answer = send("solvePart#{part_num}", lines, verbose)
-  puts "Part #{part_num}"
-  puts "Answer: #{answer}"
-  puts "Time: #{clock.get_time_pretty}\n\n"
+  answer = send("solvePart#{part_num}", input, verbose)
+
+  if output
+    puts "Part #{part_num}"
+    puts "Answer: #{answer}"
+    puts "Time: #{clock.get_time_pretty}\n\n"
+  end
+
+  answer
+end
+
+def run_all_tests(verbose, run_path)
+  total = 0
+  passed = 0
+  failed = 0
+
+  (1..12).each do |day|
+    day_path = File.join(run_path, "Day #{day}")
+    config_path = File.join(day_path, "config.json")
+    main_path = File.join(day_path, "main.rb")
+
+    next unless File.exist?(config_path) && File.exist?(main_path)
+
+    require_relative "Day #{day}/main.rb"
+    config = JSON.parse(File.read(config_path))
+    expected = config['expectedOutput'] || {}
+
+    %w[part1Test part1 part2Test part2].each do |key|
+      next unless expected.key?(key)
+
+      part_num = key.include?('1') ? 1 : 2
+      test_mode = key.include?('Test')
+      expected_value = expected[key]
+
+      answer = run_part(day, part_num, test_mode, verbose, run_path, config, output: false)
+      total += 1
+
+      if answer.to_s == expected_value.to_s
+        passed += 1
+        puts "✓ Day #{day} #{key}: #{answer}"
+      else
+        failed += 1
+        puts "✗ Day #{day} #{key}: got #{answer}, expected #{expected_value}"
+      end
+    end
+  end
+
+  puts "\n---------------------"
+  puts "Results: #{passed}/#{total} passed, #{failed} failed"
+  exit(failed > 0 ? 1 : 0)
 end
 
 if __FILE__ == $0
   if ARGV.empty?
     puts "Usage: ruby main.rb <day_number> [-t|--test] [-v|--verbose]"
+    puts "       ruby main.rb --test-all [-v|--verbose]"
     puts "  day_number: 1-12"
     puts "  -t, --test: optional, use example input"
     puts "  -v, --verbose: optional, enable verbose output"
+    puts "  --test-all: run all days and verify against expectedOutput"
     exit 1
   end
 
   $verbose = ARGV.include?('-v') || ARGV.include?('--verbose')
+  run_path = File.dirname(__FILE__)
+
+  if ARGV.include?('--test-all')
+    run_all_tests($verbose, run_path)
+    exit 0
+  end
+
   test_mode = ARGV.include?('-t') || ARGV.include?('--test')
   args = ARGV.reject { |a| %w[-v --verbose -t --test].include?(a) }
 
@@ -62,7 +122,6 @@ if __FILE__ == $0
 
   require_relative "Day #{day}/main.rb"
 
-  run_path = File.dirname(__FILE__)
   config_path = File.join(run_path, "Day #{day}", "config.json")
   config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
 
