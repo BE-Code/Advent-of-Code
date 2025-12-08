@@ -1,5 +1,4 @@
-
-def solvePart1(lines, testMode)
+def solvePart1(lines, verbose)
   answer = 0
   lines.each do |line|
     # puts line
@@ -8,7 +7,7 @@ def solvePart1(lines, testMode)
   return answer
 end
 
-def solvePart2(lines, testMode)
+def solvePart2(lines, verbose)
   answer = 0
   lines.each do |line|
     # puts line

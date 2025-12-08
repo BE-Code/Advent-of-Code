@@ -25,7 +25,7 @@ class Clock
   end
 end
 
-def run_part(day, part_num, test_mode, run_path)
+def run_part(day, part_num, test_mode, verbose, run_path)
   input_file = test_mode ? "Day #{day}/ex_input#{part_num}.txt" : "Day #{day}/input#{part_num}.txt"
   input_path = File.join(run_path, input_file)
 
@@ -35,7 +35,7 @@ def run_part(day, part_num, test_mode, run_path)
   lines = input.split("\n")
 
   clock = Clock.new
-  answer = send("solvePart#{part_num}", lines, test_mode)
+  answer = send("solvePart#{part_num}", lines, verbose)
   puts "Part #{part_num}"
   puts "Answer: #{answer}"
   puts "Time: #{clock.get_time_pretty}\n\n"
@@ -43,14 +43,18 @@ end
 
 if __FILE__ == $0
   if ARGV.empty?
-    puts "Usage: ruby main.rb <day_number> [test]"
+    puts "Usage: ruby main.rb <day_number> [-t|--test] [-v|--verbose]"
     puts "  day_number: 1-12"
-    puts "  test: optional, pass 'test' or 'true' to use example input"
+    puts "  -t, --test: optional, use example input"
+    puts "  -v, --verbose: optional, enable verbose output"
     exit 1
   end
 
-  day = ARGV[0].to_i
-  test_mode = %w[test true].include?(ARGV[1]&.downcase)
+  $verbose = ARGV.include?('-v') || ARGV.include?('--verbose')
+  test_mode = ARGV.include?('-t') || ARGV.include?('--test')
+  args = ARGV.reject { |a| %w[-v --verbose -t --test].include?(a) }
+
+  day = args[0].to_i
 
   require_relative "Day #{day}/main.rb"
 
@@ -59,6 +63,6 @@ if __FILE__ == $0
   puts "Day #{day}#{test_mode ? ' (test mode)' : ''}"
   puts "---------------------"
 
-  run_part(day, 1, test_mode, run_path)
-  run_part(day, 2, test_mode, run_path)
+  run_part(day, 1, test_mode, $verbose, run_path)
+  run_part(day, 2, test_mode, $verbose, run_path)
 end
