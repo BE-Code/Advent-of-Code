@@ -1,10 +1,10 @@
 {
   "separator": "\n",
   "input": {
-    "part1Test": "ex_input1.txt",
-    "part1": "input1.txt",
-    "part2Test": "ex_input2.txt",
-    "part2": "input2.txt"
+    "part1Test": "ex_input.txt",
+    "part1": "input.txt",
+    "part2Test": "ex_input.txt",
+    "part2": "input.txt"
   },
   "expectedOutput": {
     "part1Test": 3,
