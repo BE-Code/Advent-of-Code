@@ -26,6 +26,16 @@ class Clock
   end
 end
 
+def split_recursive(input, separators)
+  return input if separators.empty?
+
+  sep, *rest = separators
+  parts = input.split(sep)
+  return parts if rest.empty?
+
+  parts.map { |part| split_recursive(part, rest) }
+end
+
 def load_input(day, part_num, test_mode, run_path, config)
   input_key = test_mode ? "part#{part_num}Test" : "part#{part_num}"
   input_filename = config.dig('input', input_key)
@@ -35,8 +45,10 @@ def load_input(day, part_num, test_mode, run_path, config)
   return nil unless File.exist?(input_path)
 
   separator = config['separator'] || "\n"
+  separators = Array(separator)
   input = File.read(input_path)
-  return input.split(separator)
+
+  split_recursive(input, separators)
 end
 
 def run_part(day, part_num, test_mode, verbose, run_path, config, output: true)
