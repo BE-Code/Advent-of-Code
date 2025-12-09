@@ -8,8 +8,8 @@
   },
   "expectedOutput": {
     "part1Test": 1227775554,
-    "part1": null,
-    "part2Test": null,
+    "part1": 40398804950,
+    "part2Test": 4174379265,
     "part2": null
   }
 }
