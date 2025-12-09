@@ -40,6 +40,9 @@ def load_input(day, part_num, test_mode, run_path, config)
 end
 
 def run_part(day, part_num, test_mode, verbose, run_path, config, output: true)
+  expected_key = "part#{part_num}Test"
+  return nil if config.dig('expectedOutput', expected_key).nil?
+
   input = load_input(day, part_num, test_mode, run_path, config)
   return nil unless input
 
@@ -72,7 +75,7 @@ def run_all_tests(verbose, run_path)
     expected = config['expectedOutput'] || {}
 
     %w[part1Test part1 part2Test part2].each do |key|
-      next unless expected.key?(key)
+      next if expected[key].nil?
 
       part_num = key.include?('1') ? 1 : 2
       test_mode = key.include?('Test')
