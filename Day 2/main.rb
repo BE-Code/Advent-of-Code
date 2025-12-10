@@ -36,9 +36,36 @@ end
 
 def solvePart2(ranges, verbose)
   answer = 0
+  # skipExcept = 1
   ranges.each do |range|
-    # puts range.to_json
-    answer += 1
+    # skipExcept -= 1
+    # if skipExcept != 0
+    #   next
+    # end
+    i = range[0].to_i
+    for i in range[0].to_i..range[1].to_i
+      numDigits = nDigits(i)
+      for divisor in 1..(numDigits / 2)
+        if numDigits % divisor != 0
+          next
+        end
+        chunks = i.to_s.scan(/.{#{divisor}}/)
+        (verbose) ? puts(chunks.to_json) : nil
+        failed = false
+        for chunk in chunks
+          if chunk != chunks[0]
+            failed = true
+            break
+          end
+        end
+        if !failed
+          answer += i
+          (verbose) ? puts("match") : nil
+          break
+        end
+      end
+    end
+    (verbose) ? puts("final i: #{i}") : nil
   end
   return answer
 end
