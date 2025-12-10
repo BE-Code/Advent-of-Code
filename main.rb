@@ -83,7 +83,7 @@ def load_input(year, day, part_num, test_mode, run_path, config)
   split_recursive(input, separators)
 end
 
-def run_part(year, day, part_num, test_mode, verbose, run_path, config, output: true, redact: false)
+def run_part(year, day, part_num, test_mode, verbose, run_path, config, output: true, redact: false, spinner: false)
   expected_key = "part#{part_num}Test"
   return nil if config.dig('expectedOutput', expected_key).nil?
 
@@ -91,7 +91,13 @@ def run_part(year, day, part_num, test_mode, verbose, run_path, config, output: 
   return nil unless input
 
   clock = Clock.new
-  answer = send("solvePart#{part_num}", input, verbose)
+  answer = if spinner
+    with_spinner("Part #{part_num}") do
+      send("solvePart#{part_num}", input, verbose)
+    end
+  else
+    send("solvePart#{part_num}", input, verbose)
+  end
 
   if output
     puts "Part #{part_num}"
@@ -100,6 +106,29 @@ def run_part(year, day, part_num, test_mode, verbose, run_path, config, output: 
   end
 
   answer
+end
+
+def with_spinner(message)
+  spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+  running = true
+  spinner_thread = Thread.new do
+    i = 0
+    while running
+      print "\r#{spinner[i % spinner.length]} #{message}"
+      $stdout.flush
+      sleep 0.1
+      i += 1
+    end
+  end
+
+  result = yield
+
+  running = false
+  spinner_thread.join
+  print "\r#{' ' * (message.length + 2)}\r"
+  $stdout.flush
+
+  result
 end
 
 def run_all_tests(year, verbose, run_path)
@@ -125,15 +154,18 @@ def run_all_tests(year, verbose, run_path)
       test_mode = key.include?('Test')
       expected_value = expected[key]
 
-      answer = run_part(year, day, part_num, test_mode, verbose, run_path, config, output: false)
+      label = "#{day_folder(day)} #{key}"
+      answer = with_spinner(label) do
+        run_part(year, day, part_num, test_mode, verbose, run_path, config, output: false)
+      end
       total += 1
 
       if answer.to_s == expected_value.to_s
         passed += 1
-        puts "✓ #{day_folder(day)} #{key}: #{answer}"
+        puts "✓ #{label}: #{answer}"
       else
         failed += 1
-        puts "✗ #{day_folder(day)} #{key}: got #{answer}, expected #{expected_value}"
+        puts "✗ #{label}: got #{answer}, expected #{expected_value}"
       end
     end
   end
@@ -201,6 +233,6 @@ if __FILE__ == $0
   puts "#{day_folder(day)}#{test_mode ? ' (test mode)' : ''}"
   puts "-----------------------"
 
-  run_part(year, day, 1, test_mode, $verbose, run_path, config, redact: redact)
-  run_part(year, day, 2, test_mode, $verbose, run_path, config, redact: redact)
+  run_part(year, day, 1, test_mode, $verbose, run_path, config, redact: redact, spinner: true)
+  run_part(year, day, 2, test_mode, $verbose, run_path, config, redact: redact, spinner: true)
 end
