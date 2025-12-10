@@ -51,7 +51,7 @@ def load_input(day, part_num, test_mode, run_path, config)
   split_recursive(input, separators)
 end
 
-def run_part(day, part_num, test_mode, verbose, run_path, config, output: true)
+def run_part(day, part_num, test_mode, verbose, run_path, config, output: true, redact: false)
   expected_key = "part#{part_num}Test"
   return nil if config.dig('expectedOutput', expected_key).nil?
 
@@ -63,7 +63,7 @@ def run_part(day, part_num, test_mode, verbose, run_path, config, output: true)
 
   if output
     puts "Part #{part_num}"
-    puts "Answer: #{answer}"
+    puts "Answer: #{redact ? '***' : answer}"
     puts "Time: #{clock.get_time_pretty}\n\n"
   end
 
@@ -113,11 +113,12 @@ end
 
 if __FILE__ == $0
   if ARGV.empty?
-    puts "Usage: ruby main.rb <day_number> [-t|--test] [-v|--verbose]"
+    puts "Usage: ruby main.rb <day_number> [-t|--test] [-v|--verbose] [-r|--redact]"
     puts "       ruby main.rb --test-all [-v|--verbose]"
     puts "  day_number: 1-12"
     puts "  -t, --test: optional, use example input"
     puts "  -v, --verbose: optional, enable verbose output"
+    puts "  -r, --redact: optional, redact answers"
     puts "  --test-all: run all days and verify against expectedOutput"
     exit 1
   end
@@ -131,7 +132,8 @@ if __FILE__ == $0
   end
 
   test_mode = ARGV.include?('-t') || ARGV.include?('--test')
-  args = ARGV.reject { |a| %w[-v --verbose -t --test].include?(a) }
+  redact = ARGV.include?('-r') || ARGV.include?('--redact')
+  args = ARGV.reject { |a| %w[-v --verbose -t --test -r --redact].include?(a) }
 
   day = args[0].to_i
 
@@ -140,9 +142,9 @@ if __FILE__ == $0
   config_path = File.join(run_path, "Day #{day}", "config.json")
   config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
 
-  puts "Day #{day}#{test_mode ? ' (test mode)' : ''}"
-  puts "---------------------"
+  puts "Day #{day.to_s.rjust(2, '0')}#{test_mode ? ' (test mode)' : ''}"
+  puts "-----------------------"
 
-  run_part(day, 1, test_mode, $verbose, run_path, config)
-  run_part(day, 2, test_mode, $verbose, run_path, config)
+  run_part(day, 1, test_mode, $verbose, run_path, config, redact: redact)
+  run_part(day, 2, test_mode, $verbose, run_path, config, redact: redact)
 end
