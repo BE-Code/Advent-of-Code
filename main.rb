@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'json'
+require 'fileutils'
 
 class Clock
   def initialize
@@ -28,6 +29,24 @@ end
 
 def day_folder(day)
   "Day #{day.to_s.rjust(2, '0')}"
+end
+
+def generate_day(day, run_path)
+  template_path = File.join(run_path, "Day Template")
+  dest_path = File.join(run_path, day_folder(day))
+
+  if File.exist?(dest_path)
+    puts "Error: #{day_folder(day)} already exists"
+    exit 1
+  end
+
+  unless File.exist?(template_path)
+    puts "Error: Day Template folder not found"
+    exit 1
+  end
+
+  FileUtils.cp_r(template_path, dest_path)
+  puts "Created #{day_folder(day)}"
 end
 
 def split_recursive(input, separators)
@@ -119,11 +138,13 @@ if __FILE__ == $0
   if ARGV.empty?
     puts "Usage: ruby main.rb <day_number> [-t|--test] [-v|--verbose] [-r|--redact]"
     puts "       ruby main.rb --test-all [-v|--verbose]"
+    puts "       ruby main.rb -g|--generate <day_number>"
     puts "  day_number: 1-12"
     puts "  -t, --test: optional, use example input"
     puts "  -v, --verbose: optional, enable verbose output"
     puts "  -r, --redact: optional, redact answers"
     puts "  --test-all: run all days and verify against expectedOutput"
+    puts "  -g, --generate: create a new day folder from template"
     exit 1
   end
 
@@ -132,6 +153,13 @@ if __FILE__ == $0
 
   if ARGV.include?('--test-all')
     run_all_tests($verbose, run_path)
+    exit 0
+  end
+
+  if ARGV.include?('-g') || ARGV.include?('--generate')
+    args = ARGV.reject { |a| %w[-g --generate].include?(a) }
+    day = args[0].to_i
+    generate_day(day, run_path)
     exit 0
   end
 
