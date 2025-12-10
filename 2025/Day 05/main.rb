@@ -16,11 +16,30 @@ def solvePart1(input, verbose)
   return answer
 end
 
-def solvePart2(lines, verbose)
+def solvePart2(input, verbose)
+  ranges = []
+  for range in input[0]
+    ranges.push(range.split("-").map(&:to_i))
+  end
+  sortedRanges = ranges.sort_by { |range| [range[0], range[1]] }
+  (verbose) ? puts(sortedRanges.to_json()) : nil
+  previousRange = [-2, -1]
   answer = 0
-  lines.each do |line|
-    # puts line
-    answer += 1
+  previousAnswer = 0
+  for range in sortedRanges
+    if verbose
+      puts("added #{answer - previousAnswer}")
+      previousAnswer = answer
+    end
+    if range[1] <= previousRange[1]
+      next
+    end
+    if range[0] > previousRange[1]
+      answer += range[1] - range[0] + 1
+    else
+      answer += range[1] - previousRange[1]
+    end
+    previousRange = range
   end
   return answer
 end

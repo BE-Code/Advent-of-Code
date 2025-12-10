@@ -9,7 +9,7 @@
   "expectedOutput": {
     "part1Test": 3,
     "part1": 739,
-    "part2Test": null,
-    "part2": null
+    "part2Test": 14,
+    "part2": 344486348901788
   }
 }
