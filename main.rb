@@ -26,6 +26,10 @@ class Clock
   end
 end
 
+def day_folder(day)
+  "Day #{day.to_s.rjust(2, '0')}"
+end
+
 def split_recursive(input, separators)
   return input if separators.empty?
 
@@ -41,7 +45,7 @@ def load_input(day, part_num, test_mode, run_path, config)
   input_filename = config.dig('input', input_key)
   return nil unless input_filename
 
-  input_path = File.join(run_path, "Day #{day}", input_filename)
+  input_path = File.join(run_path, day_folder(day), input_filename)
   return nil unless File.exist?(input_path)
 
   separator = config['separator'] || "\n"
@@ -76,13 +80,13 @@ def run_all_tests(verbose, run_path)
   failed = 0
 
   (1..12).each do |day|
-    day_path = File.join(run_path, "Day #{day}")
+    day_path = File.join(run_path, day_folder(day))
     config_path = File.join(day_path, "config.json")
     main_path = File.join(day_path, "main.rb")
 
     next unless File.exist?(config_path) && File.exist?(main_path)
 
-    require_relative "Day #{day}/main.rb"
+    require_relative "#{day_folder(day)}/main.rb"
     config = JSON.parse(File.read(config_path))
     expected = config['expectedOutput'] || {}
 
@@ -98,10 +102,10 @@ def run_all_tests(verbose, run_path)
 
       if answer.to_s == expected_value.to_s
         passed += 1
-        puts "✓ Day #{day} #{key}: #{answer}"
+        puts "✓ #{day_folder(day)} #{key}: #{answer}"
       else
         failed += 1
-        puts "✗ Day #{day} #{key}: got #{answer}, expected #{expected_value}"
+        puts "✗ #{day_folder(day)} #{key}: got #{answer}, expected #{expected_value}"
       end
     end
   end
@@ -137,12 +141,12 @@ if __FILE__ == $0
 
   day = args[0].to_i
 
-  require_relative "Day #{day}/main.rb"
+  require_relative "#{day_folder(day)}/main.rb"
 
-  config_path = File.join(run_path, "Day #{day}", "config.json")
+  config_path = File.join(run_path, day_folder(day), "config.json")
   config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
 
-  puts "Day #{day.to_s.rjust(2, '0')}#{test_mode ? ' (test mode)' : ''}"
+  puts "#{day_folder(day)}#{test_mode ? ' (test mode)' : ''}"
   puts "-----------------------"
 
   run_part(day, 1, test_mode, $verbose, run_path, config, redact: redact)
