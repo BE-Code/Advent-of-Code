@@ -31,12 +31,20 @@ def day_folder(day)
   "Day #{day.to_s.rjust(2, '0')}"
 end
 
-def generate_day(day, run_path)
+def year_path(run_path, year)
+  File.join(run_path, year.to_s)
+end
+
+def day_path(run_path, year, day)
+  File.join(year_path(run_path, year), day_folder(day))
+end
+
+def generate_day(day, year, run_path)
   template_path = File.join(run_path, "Day Template")
-  dest_path = File.join(run_path, day_folder(day))
+  dest_path = day_path(run_path, year, day)
 
   if File.exist?(dest_path)
-    puts "Error: #{day_folder(day)} already exists"
+    puts "Error: #{year}/#{day_folder(day)} already exists"
     exit 1
   end
 
@@ -45,8 +53,9 @@ def generate_day(day, run_path)
     exit 1
   end
 
+  FileUtils.mkdir_p(year_path(run_path, year))
   FileUtils.cp_r(template_path, dest_path)
-  puts "Created #{day_folder(day)}"
+  puts "Created #{year}/#{day_folder(day)}"
 end
 
 def split_recursive(input, separators)
@@ -59,12 +68,12 @@ def split_recursive(input, separators)
   parts.map { |part| split_recursive(part, rest) }
 end
 
-def load_input(day, part_num, test_mode, run_path, config)
+def load_input(year, day, part_num, test_mode, run_path, config)
   input_key = test_mode ? "part#{part_num}Test" : "part#{part_num}"
   input_filename = config.dig('input', input_key)
   return nil unless input_filename
 
-  input_path = File.join(run_path, day_folder(day), input_filename)
+  input_path = File.join(day_path(run_path, year, day), input_filename)
   return nil unless File.exist?(input_path)
 
   separator = config['separator'] || "\n"
@@ -74,11 +83,11 @@ def load_input(day, part_num, test_mode, run_path, config)
   split_recursive(input, separators)
 end
 
-def run_part(day, part_num, test_mode, verbose, run_path, config, output: true, redact: false)
+def run_part(year, day, part_num, test_mode, verbose, run_path, config, output: true, redact: false)
   expected_key = "part#{part_num}Test"
   return nil if config.dig('expectedOutput', expected_key).nil?
 
-  input = load_input(day, part_num, test_mode, run_path, config)
+  input = load_input(year, day, part_num, test_mode, run_path, config)
   return nil unless input
 
   clock = Clock.new
@@ -93,19 +102,19 @@ def run_part(day, part_num, test_mode, verbose, run_path, config, output: true, 
   answer
 end
 
-def run_all_tests(verbose, run_path)
+def run_all_tests(year, verbose, run_path)
   total = 0
   passed = 0
   failed = 0
 
-  (1..12).each do |day|
-    day_path = File.join(run_path, day_folder(day))
-    config_path = File.join(day_path, "config.json")
-    main_path = File.join(day_path, "main.rb")
+  (1..25).each do |day|
+    dp = day_path(run_path, year, day)
+    config_path = File.join(dp, "config.json")
+    main_path = File.join(dp, "main.rb")
 
     next unless File.exist?(config_path) && File.exist?(main_path)
 
-    require_relative "#{day_folder(day)}/main.rb"
+    require_relative "#{year}/#{day_folder(day)}/main.rb"
     config = JSON.parse(File.read(config_path))
     expected = config['expectedOutput'] || {}
 
@@ -116,7 +125,7 @@ def run_all_tests(verbose, run_path)
       test_mode = key.include?('Test')
       expected_value = expected[key]
 
-      answer = run_part(day, part_num, test_mode, verbose, run_path, config, output: false)
+      answer = run_part(year, day, part_num, test_mode, verbose, run_path, config, output: false)
       total += 1
 
       if answer.to_s == expected_value.to_s
@@ -134,15 +143,28 @@ def run_all_tests(verbose, run_path)
   exit(failed > 0 ? 1 : 0)
 end
 
+def parse_year(args)
+  year_idx = args.index { |a| a == '-y' || a == '--year' }
+  if year_idx && args[year_idx + 1]
+    year = args[year_idx + 1].to_i
+    args.delete_at(year_idx + 1)
+    args.delete_at(year_idx)
+    year
+  else
+    Time.now.year
+  end
+end
+
 if __FILE__ == $0
   if ARGV.empty?
-    puts "Usage: ruby main.rb <day_number> [-t|--test] [-v|--verbose] [-r|--redact]"
-    puts "       ruby main.rb --test-all [-v|--verbose]"
-    puts "       ruby main.rb -g|--generate <day_number>"
-    puts "  day_number: 1-12"
+    puts "Usage: ruby main.rb <day_number> [-t|--test] [-v|--verbose] [-r|--redact] [-y|--year <year>]"
+    puts "       ruby main.rb --test-all [-v|--verbose] [-y|--year <year>]"
+    puts "       ruby main.rb -g|--generate <day_number> [-y|--year <year>]"
+    puts "  day_number: 1-25"
     puts "  -t, --test: optional, use example input"
     puts "  -v, --verbose: optional, enable verbose output"
     puts "  -r, --redact: optional, redact answers"
+    puts "  -y, --year: optional, specify year (default: current year)"
     puts "  --test-all: run all days and verify against expectedOutput"
     puts "  -g, --generate: create a new day folder from template"
     exit 1
@@ -150,33 +172,35 @@ if __FILE__ == $0
 
   $verbose = ARGV.include?('-v') || ARGV.include?('--verbose')
   run_path = File.dirname(__FILE__)
+  args = ARGV.dup
+  year = parse_year(args)
 
-  if ARGV.include?('--test-all')
-    run_all_tests($verbose, run_path)
+  if args.include?('--test-all')
+    run_all_tests(year, $verbose, run_path)
     exit 0
   end
 
-  if ARGV.include?('-g') || ARGV.include?('--generate')
-    args = ARGV.reject { |a| %w[-g --generate].include?(a) }
+  if args.include?('-g') || args.include?('--generate')
+    args = args.reject { |a| %w[-g --generate -v --verbose].include?(a) }
     day = args[0].to_i
-    generate_day(day, run_path)
+    generate_day(day, year, run_path)
     exit 0
   end
 
-  test_mode = ARGV.include?('-t') || ARGV.include?('--test')
-  redact = ARGV.include?('-r') || ARGV.include?('--redact')
-  args = ARGV.reject { |a| %w[-v --verbose -t --test -r --redact].include?(a) }
+  test_mode = args.include?('-t') || args.include?('--test')
+  redact = args.include?('-r') || args.include?('--redact')
+  args = args.reject { |a| %w[-v --verbose -t --test -r --redact].include?(a) }
 
   day = args[0].to_i
 
-  require_relative "#{day_folder(day)}/main.rb"
+  require_relative "#{year}/#{day_folder(day)}/main.rb"
 
-  config_path = File.join(run_path, day_folder(day), "config.json")
+  config_path = File.join(day_path(run_path, year, day), "config.json")
   config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
 
   puts "#{day_folder(day)}#{test_mode ? ' (test mode)' : ''}"
   puts "-----------------------"
 
-  run_part(day, 1, test_mode, $verbose, run_path, config, redact: redact)
-  run_part(day, 2, test_mode, $verbose, run_path, config, redact: redact)
+  run_part(year, day, 1, test_mode, $verbose, run_path, config, redact: redact)
+  run_part(year, day, 2, test_mode, $verbose, run_path, config, redact: redact)
 end
