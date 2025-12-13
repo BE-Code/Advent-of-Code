@@ -1,5 +1,5 @@
 {
-  "separator": "\n",
+  "separator": ["\n"],
   "input": {
     "part1Test": "ex_input.txt",
     "part1": "input.txt",
