@@ -8,7 +8,7 @@
   },
   "expectedOutput": {
     "part1Test": 40,
-    "part1": null,
+    "part1": 131580,
     "part2Test": null,
     "part2": null
   }
