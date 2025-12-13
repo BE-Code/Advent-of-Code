@@ -54,16 +54,16 @@ def solvePart1(boxes)
 end
 
 def solvePart2(boxes)
-  nConnections = boxes.length <= 20 ? 10 : 1000
   puts(boxes.length)
   groups = []
   boxDistances = findBoxDistances(boxes)
   puts(boxDistances.length)
   sortedBoxDistances = boxDistances.sort_by { |boxDistance| boxDistance[1] }
 
-  printBoxDistances = sortedBoxDistances.map { |boxDistance| boxDistance[0] }[0..nConnections - 1]
+  printBoxDistances = sortedBoxDistances.map { |boxDistance| boxDistance[0] }
   puts(printBoxDistances.to_json())
-  for i in 0..nConnections - 1
+
+  for i in 0..sortedBoxDistances.length - 1
     newConnection = sortedBoxDistances[i][0]
     groupA = getGroupIndex(newConnection[0], groups)
     groupB = getGroupIndex(newConnection[1], groups)
@@ -77,10 +77,12 @@ def solvePart2(boxes)
       groups[groupA] = Set.new(groups[groupA] + groups[groupB]).to_a
       groups.delete_at(groupB)
     end
-    # puts(groups.to_json() + " " + newConnection.to_json())
+    if groups.length == 1 && groups[0].length == boxes.length
+      boxA = boxes[newConnection[0]]
+      boxB = boxes[newConnection[1]]
+      return boxA[0].to_i * boxB[0].to_i
+    end
+    puts(groups.to_json() + " " + newConnection.to_json())
   end
-  sortedGroups = groups.sort_by { |group| group.length }.reverse
-  # puts("==========")
-  # puts(sortedGroups.to_json())
-  return sortedGroups[0].length * sortedGroups[1].length * sortedGroups[2].length
+  return nil
 end
