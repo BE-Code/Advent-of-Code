@@ -93,10 +93,10 @@ def run_part(year, day, part_num, test_mode, verbose, run_path, config, output: 
   clock = Clock.new
   answer = if spinner
     with_spinner("Part #{part_num}") do
-      send("solvePart#{part_num}", input, verbose)
+      silence_output(!verbose) { send("solvePart#{part_num}", input, verbose) }
     end
   else
-    send("solvePart#{part_num}", input, verbose)
+    silence_output(!verbose) { send("solvePart#{part_num}", input, verbose) }
   end
 
   if output
@@ -129,6 +129,20 @@ def with_spinner(message)
   $stdout.flush
 
   result
+end
+
+def silence_output(silent)
+  if silent
+    original_stdout = $stdout
+    $stdout = File.open(File::NULL, 'w')
+    begin
+      yield
+    ensure
+      $stdout = original_stdout
+    end
+  else
+    yield
+  end
 end
 
 def run_all_tests(year, verbose, run_path)
