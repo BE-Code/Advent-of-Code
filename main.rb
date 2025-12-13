@@ -155,8 +155,12 @@ def run_all_tests(year, verbose, run_path)
       expected_value = expected[key]
 
       label = "#{day_folder(day)} #{key}"
-      answer = with_spinner(label) do
+      answer = if verbose
         run_part(year, day, part_num, test_mode, verbose, run_path, config, output: false)
+      else
+        with_spinner(label) do
+          run_part(year, day, part_num, test_mode, verbose, run_path, config, output: false)
+        end
       end
       total += 1
 
@@ -233,6 +237,6 @@ if __FILE__ == $0
   puts "#{day_folder(day)}#{test_mode ? ' (test mode)' : ''}"
   puts "-----------------------"
 
-  run_part(year, day, 1, test_mode, $verbose, run_path, config, redact: redact, spinner: true)
-  run_part(year, day, 2, test_mode, $verbose, run_path, config, redact: redact, spinner: true)
+  run_part(year, day, 1, test_mode, $verbose, run_path, config, redact: redact, spinner: !$verbose)
+  run_part(year, day, 2, test_mode, $verbose, run_path, config, redact: redact, spinner: !$verbose)
 end
