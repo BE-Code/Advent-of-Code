@@ -114,8 +114,8 @@ def with_spinner(message)
   spinner_thread = Thread.new do
     i = 0
     while running
-      print "\r#{spinner[i % spinner.length]} #{message}"
-      $stdout.flush
+      STDOUT.print "\r#{spinner[i % spinner.length]} #{message}"
+      STDOUT.flush
       sleep 0.1
       i += 1
     end
@@ -125,8 +125,8 @@ def with_spinner(message)
 
   running = false
   spinner_thread.join
-  print "\r#{' ' * (message.length + 2)}\r"
-  $stdout.flush
+  STDOUT.print "\r#{' ' * (message.length + 2)}\r"
+  STDOUT.flush
 
   result
 end
@@ -134,11 +134,13 @@ end
 def silence_output(silent)
   if silent
     original_stdout = $stdout
-    $stdout = File.open(File::NULL, 'w')
+    null_file = File.open(File::NULL, 'w')
+    $stdout = null_file
     begin
       yield
     ensure
       $stdout = original_stdout
+      null_file.close
     end
   else
     yield
