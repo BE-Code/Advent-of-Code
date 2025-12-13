@@ -1,4 +1,4 @@
-def solvePart1(lines, verbose)
+def solvePart1(lines, verbose = true)
   # (verbose) ? puts(lines.to_json()) : nil
   answer = 0
   operators = lines[-1].split(" ")
@@ -40,7 +40,7 @@ def getOperatorSpacing(operatorString)
   return operatorSpacing
 end
 
-def solvePart2(lines, verbose)
+def solvePart2(lines, verbose = true)
   (verbose) ? puts(lines.to_json()) : nil
   answer = 0
   operatorSpacings = getOperatorSpacing(lines[-1])

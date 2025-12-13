@@ -8,7 +8,7 @@ def findBiggestNumberIndex(nString)
   return biggestIndex
 end
 
-def solvePart1(lines, verbose)
+def solvePart1(lines, verbose = true)
   answer = 0
   lines.each do |line|
     biggestIndex = findBiggestNumberIndex(line[0..-2])
@@ -19,7 +19,7 @@ def solvePart1(lines, verbose)
   return answer
 end
 
-def solvePart2(lines, verbose)
+def solvePart2(lines, verbose = true)
   answer = 0
   lines.each do |line|
     maxNumber = ""

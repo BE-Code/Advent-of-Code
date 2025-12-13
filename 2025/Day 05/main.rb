@@ -1,4 +1,4 @@
-def solvePart1(input, verbose)
+def solvePart1(input, verbose = true)
   ranges = []
   for range in input[0]
     ranges.push(range.split("-").map(&:to_i))
@@ -16,7 +16,7 @@ def solvePart1(input, verbose)
   return answer
 end
 
-def solvePart2(input, verbose)
+def solvePart2(input, verbose = true)
   ranges = []
   for range in input[0]
     ranges.push(range.split("-").map(&:to_i))

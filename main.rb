@@ -93,10 +93,10 @@ def run_part(year, day, part_num, test_mode, verbose, run_path, config, output: 
   clock = Clock.new
   answer = if spinner
     with_spinner("Part #{part_num}") do
-      silence_output(!verbose) { send("solvePart#{part_num}", input, verbose) }
+      silence_output(!verbose) { send("solvePart#{part_num}", input) }
     end
   else
-    silence_output(!verbose) { send("solvePart#{part_num}", input, verbose) }
+    silence_output(!verbose) { send("solvePart#{part_num}", input) }
   end
 
   if output

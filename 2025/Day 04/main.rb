@@ -29,7 +29,7 @@ def getAdjacentRolls(lines, i, j)
   return adjacentRolls
 end
 
-def solvePart1(lines, verbose)
+def solvePart1(lines, verbose = true)
   answer = 0
   for i in 0..lines[0].length - 1
     for j in 0..lines[i].length - 1
@@ -45,7 +45,7 @@ def solvePart1(lines, verbose)
   return answer
 end
 
-def solvePart2(lines, verbose)
+def solvePart2(lines, verbose = true)
   answer = 0
   while true
     startingAnswer = answer

@@ -2,7 +2,7 @@ def nDigits(n)
   return n.to_s.length
 end
 
-def solvePart1(ranges, verbose)
+def solvePart1(ranges, verbose = true)
   answer = 0
   # skipExcept = 3
   ranges.each do |range|
@@ -34,7 +34,7 @@ def solvePart1(ranges, verbose)
   return answer
 end
 
-def solvePart2(ranges, verbose)
+def solvePart2(ranges, verbose = true)
   answer = 0
   # skipExcept = 1
   ranges.each do |range|
