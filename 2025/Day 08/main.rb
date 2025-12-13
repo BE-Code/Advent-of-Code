@@ -54,9 +54,33 @@ def solvePart1(boxes)
 end
 
 def solvePart2(boxes)
-  answer = 0
-  boxes.each do |box|
-    answer += 1
+  nConnections = boxes.length <= 20 ? 10 : 1000
+  puts(boxes.length)
+  groups = []
+  boxDistances = findBoxDistances(boxes)
+  puts(boxDistances.length)
+  sortedBoxDistances = boxDistances.sort_by { |boxDistance| boxDistance[1] }
+
+  printBoxDistances = sortedBoxDistances.map { |boxDistance| boxDistance[0] }[0..nConnections - 1]
+  puts(printBoxDistances.to_json())
+  for i in 0..nConnections - 1
+    newConnection = sortedBoxDistances[i][0]
+    groupA = getGroupIndex(newConnection[0], groups)
+    groupB = getGroupIndex(newConnection[1], groups)
+    if groupA == nil && groupB == nil
+      groups.push([newConnection[0], newConnection[1]])
+    elsif groupA == nil
+      groups[groupB].push(newConnection[0])
+    elsif groupB == nil
+      groups[groupA].push(newConnection[1])
+    elsif groupA != groupB
+      groups[groupA] = Set.new(groups[groupA] + groups[groupB]).to_a
+      groups.delete_at(groupB)
+    end
+    # puts(groups.to_json() + " " + newConnection.to_json())
   end
-  return answer
+  sortedGroups = groups.sort_by { |group| group.length }.reverse
+  # puts("==========")
+  # puts(sortedGroups.to_json())
+  return sortedGroups[0].length * sortedGroups[1].length * sortedGroups[2].length
 end
