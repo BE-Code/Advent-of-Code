@@ -64,6 +64,7 @@ def solvePart1(lines)
   return answer
 end
 
+# Not Started
 def solvePart2(lines)
   puts(lines.to_json())
 

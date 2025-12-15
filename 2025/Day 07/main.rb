@@ -1,3 +1,4 @@
+# Not Started
 def solvePart1(lines)
   answer = 0
   lines.each do |line|
@@ -7,6 +8,7 @@ def solvePart1(lines)
   return answer
 end
 
+# Not Started
 def solvePart2(lines)
   answer = 0
   lines.each do |line|

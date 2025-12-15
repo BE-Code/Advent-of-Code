@@ -22,6 +22,7 @@ def solvePart1(lines)
   return sortedAreas[0][1]
 end
 
+# Not Started
 def solvePart2(lines)
   puts(lines.to_json())
 
