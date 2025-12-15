@@ -3,12 +3,13 @@
   "input": {
     "part1Test": "ex_input.txt",
     "part1": "input.txt",
-    "part2Test": "ex_input.txt",
+    "part2Test": "ex_input2.txt",
     "part2": "input.txt"
   },
   "expectedOutput": {
     "part1Test": 5,
     "part1": 543,
+    "true part 2 test": 2,
     "part2Test": null,
     "part2": null
   }
